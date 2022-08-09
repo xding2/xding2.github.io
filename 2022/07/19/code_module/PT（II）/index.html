@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Prompt Tuning Learning (II) | Geckoized NLP (Xiaohan Ding)</title><meta name="keywords" content="NLP Learning"><meta name="author" content="Sean Ding"><meta name="copyright" content="Sean Ding"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="整体概述本文将主要从两个方向来整合对Prompt Learning的理解：  任务和数据方面。使用Prompt Learning来提高少数几次的学习能力（给模型加入额外的上下文），弥合模型调优和预训练之间的差距，以增强其能力。 优化方面。使用delta learning中，小参数的更新驱动整体的更新，来刺激具有数十亿参数级别的模型，并对其中一小部分参数进行优化。  Prompt-Learning我">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Prompt Tuning Learning (II)">
+<meta property="og:url" content="https://xding2.github.io/2022/07/19/code_module/PT%EF%BC%88II%EF%BC%89/index.html">
+<meta property="og:site_name" content="Geckoized NLP (Xiaohan Ding)">
+<meta property="og:description" content="整体概述本文将主要从两个方向来整合对Prompt Learning的理解：  任务和数据方面。使用Prompt Learning来提高少数几次的学习能力（给模型加入额外的上下文），弥合模型调优和预训练之间的差距，以增强其能力。 优化方面。使用delta learning中，小参数的更新驱动整体的更新，来刺激具有数十亿参数级别的模型，并对其中一小部分参数进行优化。  Prompt-Learning我">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg">
+<meta property="article:published_time" content="2022-07-20T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-08-09T00:30:17.871Z">
+<meta property="article:author" content="Sean Ding">
+<meta property="article:tag" content="NLP Learning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://xding2.github.io/2022/07/19/code_module/PT%EF%BC%88II%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: true
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Prompt Tuning Learning (II)',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-08-08 20:30:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cdn.donmai.us/original/b5/3e/__avatar_final_fantasy_and_1_more_drawn_by_lixiang_guo_alice__b53e5caeb4c1ecb9ddacce3e8d26e753.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Geckoized NLP (Xiaohan Ding)</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Prompt Tuning Learning (II)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2022-07-20T00:00:00.000Z" title="Created 2022-07-19 20:00:00">2022-07-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-08-09T00:30:17.871Z" title="Updated 2022-08-08 20:30:17">2022-08-08</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Prompt Tuning Learning (II)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h1><p>本文将主要从两个方向来整合对Prompt Learning的理解：</p>
+<ul>
+<li>任务和数据方面。使用Prompt Learning来提高少数几次的学习能力（给模型加入额外的上下文），弥合模型调优和预训练之间的差距，以增强其能力。</li>
+<li>优化方面。使用delta learning中，小参数的更新驱动整体的更新，来刺激具有数十亿参数级别的模型，并对其中一小部分参数进行优化。</li>
+</ul>
+<h1 id="Prompt-Learning"><a href="#Prompt-Learning" class="headerlink" title="Prompt-Learning"></a>Prompt-Learning</h1><p>我们还是从对比Fine-tuning的基本范式来看起。概括来说，Pre-training是Mask掉一个单词，并将其送入encoder中，再预测出Mask掉的单词为某某某。Fine-tuning过程则是将一个句子送入encoder中，通过task head预测出句子所对应的label。如下图：<br><img src="https://s2.loli.net/2022/08/09/BMFonusq65W98w3.png" alt="pre-train &amp; fine-tuning"><br>Since we use PLMs as base encoders, add additional neural layers for specific tasks, and tune all the parameters, there is a GAP between pre-training and fine-tuning.</p>
+<h2 id="Prompt-Learning-基本范式"><a href="#Prompt-Learning-基本范式" class="headerlink" title="Prompt-Learning 基本范式"></a>Prompt-Learning 基本范式</h2><p>Based on the previous issue, we still use PLMs as based encoders, but add additional context (这是则为PLearning中的模板，<strong>template</strong>) with a [ MASK ] posistion, then project the labels to the lable words (这是则为PLearning中的<strong>verbalizer</strong>), and <strong>bridge the GAP</strong> between the pre-training and fine-tuning. 如下图：<br><img src="https://s2.loli.net/2022/08/09/4HSAcJQB7js1zX2.png" alt="P-learning 的 基本范式"><br>这个时候，Prompt learning中所要送入Encoder的句子也为完形填空的形式，然后我们让模型来预测MASK位置的token。此时，模型将会预测中的并不是label，而是同fine-tuning类似，为一系列的词表分类。最终，我们只需去提取我们想要的词汇即可。举例来说，上图中，模型给出的结果可能为：{good, wonderful, health, apple, delicious}， 作为情感分类的任务，我们所需要的词汇为：{good, wonderful, delicious}。 最终，{good, wonderful, delicious} –&gt; {label: positive} （其实，词到label的过程，就是<strong>verbalizer</strong>）</p>
+<blockquote>
+<p><strong>[小结]</strong> 所以，我们在prompt-learning也是在做MASK LM，在弥补了Pre-training和Fine-tuning之间的GAP后，这就让模型有了更好的训练和范式。实际上，另一个好处是，我们现在不需要考虑任务之间的区别，因为同样的数据，根据prompt设计的不同，verbalizer选择的不同，他们实际上就可能衍生为不同的分类任务。所以，我们可以将不同的分类，或者生成任务，根据prompt进行不同的组织与设计。最终，我们看一个完整的图形化Prompt的过程。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2022/08/09/aTwZEY12Lc8ONlP.png" alt="EXAMPLE of prompt learning.png"></p>
+<h1 id="Prompt-Learning：Consideration"><a href="#Prompt-Learning：Consideration" class="headerlink" title="Prompt-Learning：Consideration"></a>Prompt-Learning：Consideration</h1><p>选择？Pre-trained Model，我们根据模型构造，目标，数据类型等等不同，要进行不同的选择</p>
+<ul>
+<li>Auto-regressive (GPT-1, GPT-2, GPT-3; OPT…)，强势于生成任务</li>
+<li>Masked Language Modeling (BERT, RoBERTa, DeBERTa)，强势与理解性任务</li>
+<li>Encoder-Decoder (T5, BART)<br>设计？Template</li>
+<li>Manually Design</li>
+<li>Auto Generation</li>
+<li>Textual or Continuous… （形式上的改装）<br>设计？Verbalizer</li>
+<li>Manually Design</li>
+<li>扩充 Verbalizer by external knowledge…</li>
+</ul>
+<p>那么，我们就从对每一个不同构造的模型的理解来展开此小节。</p>
+<h2 id="Pre-trained-Model-Auto-regressive"><a href="#Pre-trained-Model-Auto-regressive" class="headerlink" title="Pre-trained Model: Auto-regressive"></a>Pre-trained Model: Auto-regressive</h2><p>• Auto-regressive (GPT-1, GPT-2, GPT-3; OPT…)<br>• Suitable for super-large pre-trained models<br>• Autoregressive Prompt<br>超级模型，一般都是 Auto-regressive 来实现的。<br><img src="https://s2.loli.net/2022/08/09/cpyF3I6h1vr29am.png" alt="Auto-regressive"></p>
+<h2 id="Pre-trained-Model-Masked-Language-Modeling"><a href="#Pre-trained-Model-Masked-Language-Modeling" class="headerlink" title="Pre-trained Model: Masked Language Modeling"></a>Pre-trained Model: Masked Language Modeling</h2><ul>
+<li>Masked Language Modeling (BERT, RoBERTa, DeBERTa)</li>
+<li>Suitable for natural language understanding</li>
+<li>Cloze-style Prompt<br>NLU，或简单的分类任务，MLM将会更加的合适。</li>
+</ul>
+<h2 id="Pre-trained-Model-Encoder-Decoder"><a href="#Pre-trained-Model-Encoder-Decoder" class="headerlink" title="Pre-trained Model: Encoder-Decoder"></a>Pre-trained Model: Encoder-Decoder</h2><p>• Encoder-Decoder (T5, BART)<br>• Bidirectional attention for encoder<br>• Autoregressive for decoder</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://xding2.github.io">Sean Ding</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://xding2.github.io/2022/07/19/code_module/PT%EF%BC%88II%EF%BC%89/">https://xding2.github.io/2022/07/19/code_module/PT%EF%BC%88II%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NLP-Learning/">NLP Learning</a></div><div class="post_share"><div class="social-share" data-image="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/07/19/code_module/Prompt%20Tuning/"><img class="prev-cover" src="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Prompt Tuning Learning (I)</div></div></a></div><div class="next-post pull-right"><a href="/2022/06/29/hello-world/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Hello World</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2022/06/28/code_module/CMU_online_1/" title="CMU Coding Notes I"><img class="cover" src="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-28</div><div class="title">CMU Coding Notes I</div></div></a></div><div><a href="/2022/07/19/code_module/Prompt%20Tuning/" title="Prompt Tuning Learning (I)"><img class="cover" src="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-19</div><div class="title">Prompt Tuning Learning (I)</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cdn.donmai.us/original/b5/3e/__avatar_final_fantasy_and_1_more_drawn_by_lixiang_guo_alice__b53e5caeb4c1ecb9ddacce3e8d26e753.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Sean Ding</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xding2" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:gecko1095@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="http://xiaohan-site.com" target="_blank" title="Homepage"><i class="fab fa-algolia"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is for a technical blog and my home page can be found above.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">整体概述</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Learning"><span class="toc-number">2.</span> <span class="toc-text">Prompt-Learning</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-Learning-%E5%9F%BA%E6%9C%AC%E8%8C%83%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">Prompt-Learning 基本范式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Prompt-Learning%EF%BC%9AConsideration"><span class="toc-number">3.</span> <span class="toc-text">Prompt-Learning：Consideration</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Pre-trained-Model-Auto-regressive"><span class="toc-number">3.1.</span> <span class="toc-text">Pre-trained Model: Auto-regressive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pre-trained-Model-Masked-Language-Modeling"><span class="toc-number">3.2.</span> <span class="toc-text">Pre-trained Model: Masked Language Modeling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pre-trained-Model-Encoder-Decoder"><span class="toc-number">3.3.</span> <span class="toc-text">Pre-trained Model: Encoder-Decoder</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/07/19/code_module/Prompt%20Tuning/" title="Prompt Tuning Learning (I)"><img src="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Prompt Tuning Learning (I)"/></a><div class="content"><a class="title" href="/2022/07/19/code_module/Prompt%20Tuning/" title="Prompt Tuning Learning (I)">Prompt Tuning Learning (I)</a><time datetime="2022-07-20T00:00:00.000Z" title="Created 2022-07-19 20:00:00">2022-07-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/19/code_module/PT%EF%BC%88II%EF%BC%89/" title="Prompt Tuning Learning (II)"><img src="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Prompt Tuning Learning (II)"/></a><div class="content"><a class="title" href="/2022/07/19/code_module/PT%EF%BC%88II%EF%BC%89/" title="Prompt Tuning Learning (II)">Prompt Tuning Learning (II)</a><time datetime="2022-07-20T00:00:00.000Z" title="Created 2022-07-19 20:00:00">2022-07-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/06/29/hello-world/" title="Hello World"><img src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2022/06/29/hello-world/" title="Hello World">Hello World</a><time datetime="2022-06-30T03:35:10.026Z" title="Created 2022-06-29 23:35:10">2022-06-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/06/28/code_module/CMU_online_1/" title="CMU Coding Notes I"><img src="https://www.freevector.com/uploads/vector/preview/31593/freevectorFinanceFinancialLiteracyIllustrationay0222revisi_generated.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CMU Coding Notes I"/></a><div class="content"><a class="title" href="/2022/06/28/code_module/CMU_online_1/" title="CMU Coding Notes I">CMU Coding Notes I</a><time datetime="2022-06-29T00:00:00.000Z" title="Created 2022-06-28 20:00:00">2022-06-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/21/code_module/temp/" title="(Encryption) Code Module I"><img src="https://cdn.pixabay.com/photo/2018/04/24/22/33/key-3348307_960_720.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(Encryption) Code Module I"/></a><div class="content"><a class="title" href="/2022/05/21/code_module/temp/" title="(Encryption) Code Module I">(Encryption) Code Module I</a><time datetime="2022-05-22T01:18:02.000Z" title="Created 2022-05-21 21:18:02">2022-05-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Sean Ding</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a href="https://xding2.github.io/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="Switch Between Traditional Chinese And Simplified Chinese">簡</button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/tororo.model.json"},"display":{"position":"left","width":180,"height":320},"mobile":{"show":true},"log":false});</script></body></html>
