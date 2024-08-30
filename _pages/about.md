@@ -7,7 +7,7 @@ redirect_from:
   - /about.html
 ---
 
-I am a 4th-year Ph.D. candidate in Computer Science at Virginia Tech, currently advised by Eugenia Rho in the SAIL lab. Before joining VT, I completed my master's degree in Computer Science with a focus on Machine Learning at George Mason University, where I was advised by George Tecuci.
+I am a 4th-year Ph.D. candidate in Computer Science at Virginia Tech, currently advised by [Eugenia Rho](https://eugeniarho.com/) in the [SAIL]()https://eugeniarho.com/sail/ lab. Before joining VT, I completed my master's degree in Computer Science with a focus on Machine Learning at George Mason University, where I was advised by [George Tecuci](http://lac.gmu.edu/members/tecuci.htm).
 
 My research primarily focuses on two areas: **AI-mediated communication** and **the exploration of online discourse**, such as racial equity, public health, and immigration issues, using NLP technology. Within these areas, I place a particular emphasis on public health and mental health.
 
